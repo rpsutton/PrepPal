@@ -1,24 +1,18 @@
-//
-//  ContentView.swift
-//  PrepPal
-//
-//  Created by Paul Sutton on 2/1/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        NavigationView(content: {
+            ChatView()
+        })
+        .background(
+            PrepPalTheme.Colors.background
+        )
+        .preferredColorScheme(.light)
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(UserProfileManager())
 }
