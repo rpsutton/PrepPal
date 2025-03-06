@@ -9,6 +9,12 @@ struct ChatView: View {
     @State var isLoading: Bool = false
     @State var showNutritionTriggerHint: Bool = false
     
+    // Add state variables for meal plans
+    @State var showMealPlanSheet: Bool = false
+    @State var showMealDetail: Bool = false
+    @State var selectedMeal: Meal? = nil
+    @State var weeklyMealPlan: WeeklyMealPlan = WeeklyMealPlan.createSampleData()
+    
     // Quick action suggestions
     private let quickActions = [
         "Set nutrition goals",
@@ -222,7 +228,7 @@ struct ChatView: View {
         }
     }
     
-    private func sendMessage() {
+    func sendMessage() {
         guard !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         
         // Create and add user message
@@ -248,7 +254,7 @@ struct ChatView: View {
         }
     }
     
-    private func isNutritionGoalMessage(_ message: String) -> Bool {
+    func isNutritionGoalMessage(_ message: String) -> Bool {
         let lowerMessage = message.lowercased()
         
         // Keywords related to nutrition goals
@@ -264,7 +270,7 @@ struct ChatView: View {
         return false
     }
     
-    private func handleNutritionGoalMessage(_ message: String) {
+    func handleNutritionGoalMessage(_ message: String) {
         // Add assistant response about nutrition goals
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             let responseMessage = ChatMessage(
@@ -293,7 +299,7 @@ struct ChatView: View {
         }
     }
     
-    private func processWithAI(_ message: String) {
+    func processWithAI(_ message: String) {
         // Simulate AI processing
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             // In a real implementation, this would call your Firebase function to Claude API

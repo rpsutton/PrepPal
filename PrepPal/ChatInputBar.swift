@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - Enhanced Chat Input Bar
-struct ChatInputBar: View {
+public struct ChatInputBar: View {
     @Binding var messageText: String
     let onSend: () -> Void
     let onCamera: () -> Void
@@ -9,7 +9,7 @@ struct ChatInputBar: View {
     @State private var isEditing = false
     @FocusState private var isTextFieldFocused: Bool
     
-    var body: some View {
+    public var body: some View {
         VStack(spacing: 0) {
             Divider()
                 .background(PrepPalTheme.Colors.border)

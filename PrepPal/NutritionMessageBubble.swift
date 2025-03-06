@@ -41,6 +41,8 @@ extension MessageBubble {
             case .macroSuggestion:
                 // Macro adjustment suggestion
                 macroSuggestionBubble
+            case .custom(viewType: let viewType):
+                customMessageContent(for: viewType)
             }
         }
     }
@@ -48,7 +50,7 @@ extension MessageBubble {
     // Helper to identify nutrition goal messages
     private func extractNutritionMessageType() -> ChatMessage.ExtendedMessageType? {
         // Check if the message is a nutrition-related message
-        if message.type == .macroSuggestion {
+        if case .macroSuggestion = message.type {  
             let text = message.text.lowercased()
             
             if text.contains("set") && text.contains("nutrition") && text.contains("goals") {

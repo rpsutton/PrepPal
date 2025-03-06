@@ -14,6 +14,13 @@ struct ChatMessage: Identifiable {
         case image
         case recipeSuggestion
         case macroSuggestion
+        case custom(viewType: CustomViewType)
+        
+        enum CustomViewType {
+            case dailyMealPlan(dailyPlan: DailyMealPlan)
+            case weeklyMealPlan(weeklyPlan: WeeklyMealPlan)
+            case macroProgress(dailyPlan: DailyMealPlan)
+        }
     }
     
     init(text: String, isUser: Bool, type: MessageType = .text, associatedMeal: Meal? = nil) {
@@ -28,6 +35,7 @@ struct ChatMessage: Identifiable {
 struct MessageBubble: View {
     let message: ChatMessage
     @State var showDetail = false
+    @EnvironmentObject var userProfileManager: UserProfileManager
     
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -77,7 +85,41 @@ struct MessageBubble: View {
             case .macroSuggestion:
                 // Macro adjustment suggestion
                 macroSuggestionBubble
+                
+            case .custom(let viewType):
+                // Custom content
+                customMessageContent(for: viewType)
             }
+        }
+    }
+    
+    // Custom message content handler
+    @ViewBuilder
+    func customMessageContent(for viewType: ChatMessage.MessageType.CustomViewType) -> some View {
+        switch viewType {
+        case .dailyMealPlan(let dailyPlan):
+            NutritionDashboardCard(
+                dailyPlan: dailyPlan,
+                showFullMealPlan: .constant(false),
+                selectedMeal: .constant(nil),
+                showMealDetail: .constant(false)
+            )
+            .padding(.horizontal, 0)
+            
+        case .weeklyMealPlan(let weeklyPlan):
+            WeeklyMealPlanPreview(
+                weeklyPlan: weeklyPlan,
+                showFullMealPlan: .constant(false),
+                selectedDay: .constant(nil)
+            )
+            .padding(.horizontal, 0)
+            
+        case .macroProgress(let dailyPlan):
+            DailyMacroProgressCard(
+                dailyPlan: dailyPlan,
+                nutritionGoals: userProfileManager.userProfile.nutritionGoals
+            )
+            .padding(.horizontal, 0)
         }
     }
     

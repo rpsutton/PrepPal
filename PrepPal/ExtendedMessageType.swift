@@ -5,7 +5,6 @@
 //  Created by Paul Sutton on 2/26/25.
 //
 
-
 import SwiftUI
 
 // MARK: - Nutrition Goal Chat Extension
@@ -196,20 +195,6 @@ struct NutritionGoalChatMessageView: View {
     }
 }
 
-// MARK: - Chat View Extension for Nutrition Goals
-extension ChatInputBar {
-    // Add nutrition goal quick action suggestions
-    func withNutritionGoalQuickActions(onSelected: @escaping (String) -> Void) -> some View {
-        VStack(spacing: 0) {
-            // Quick actions for nutrition goals
-            NutritionGoalQuickActions(onSelected: onSelected)
-            
-            // Original chat input bar
-            self
-        }
-    }
-}
-
 // MARK: - Message Detector Extension
 extension String {
     // Detect if the message is related to nutrition goals
@@ -218,14 +203,14 @@ extension String {
         
         // Keywords related to nutrition goals
         let nutritionKeywords = [
-            "nutrition", "macros", "calories", "protein", 
-            "carbs", "fat", "diet", "weight", "goals", 
+            "nutrition", "macros", "calories", "protein",
+            "carbs", "fat", "diet", "weight", "goals",
             "target", "eating plan", "meal plan"
         ]
         
         // Action verbs related to goals
         let actionVerbs = [
-            "set", "change", "update", "adjust", "modify", 
+            "set", "change", "update", "adjust", "modify",
             "track", "increase", "decrease", "lower"
         ]
         
@@ -261,7 +246,7 @@ class ChatController {
         }
         
         // Update existing goals
-        if (lowercased.contains("update") || lowercased.contains("change") || lowercased.contains("modify")) && 
+        if (lowercased.contains("update") || lowercased.contains("change") || lowercased.contains("modify")) &&
            (lowercased.contains("goal") || lowercased.contains("target") || lowercased.contains("macros")) {
             return .update
         }
@@ -293,13 +278,13 @@ class ChatController {
         }
         
         // View progress
-        if (lowercased.contains("show") || lowercased.contains("view") || lowercased.contains("how am i doing")) && 
+        if (lowercased.contains("show") || lowercased.contains("view") || lowercased.contains("how am i doing")) &&
            (lowercased.contains("progress") || lowercased.contains("tracking")) {
             return .viewProgress
         }
         
         // Change diet type
-        if (lowercased.contains("change") || lowercased.contains("switch")) && 
+        if (lowercased.contains("change") || lowercased.contains("switch")) &&
            (lowercased.contains("diet") || lowercased.contains("eating")) {
             return .changeDietType
         }
