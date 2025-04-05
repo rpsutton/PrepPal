@@ -3,6 +3,22 @@ import SwiftUI
 // MARK: - Step View Extensions for NutritionGoalSettingSheet
 extension NutritionGoalSettingSheet {
     
+    // Add these formatters at the top of the extension
+    private var decimalFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 1
+        return formatter
+    }
+    
+    private var integerFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.allowsFloats = false
+        return formatter
+    }
+    
     // MARK: - Welcome Step
     var welcomeStep: some View {
         VStack(spacing: 16) {
@@ -54,40 +70,43 @@ extension NutritionGoalSettingSheet {
                 .foregroundColor(PrepPalTheme.Colors.gray400)
                 .multilineTextAlignment(.center)
             
-            // Weight input
+            // Weight input with decimal formatter
             VStack(alignment: .leading, spacing: 8) {
                 Text("Weight (kg)")
                     .font(PrepPalTheme.Typography.bodyRegular)
                     .foregroundColor(PrepPalTheme.Colors.gray600)
                 
-                TextField("70", value: $temporaryUserData.weight, formatter: NumberFormatter())
+                TextField("70", value: $temporaryUserData.weight, formatter: decimalFormatter)
                     .keyboardType(.decimalPad)
+                    .textContentType(.none) // Disable content type prediction
                     .padding()
                     .background(PrepPalTheme.Colors.gray100)
                     .cornerRadius(PrepPalTheme.Layout.cornerRadius)
             }
             
-            // Height input
+            // Height input with decimal formatter
             VStack(alignment: .leading, spacing: 8) {
                 Text("Height (cm)")
                     .font(PrepPalTheme.Typography.bodyRegular)
                     .foregroundColor(PrepPalTheme.Colors.gray600)
                 
-                TextField("170", value: $temporaryUserData.heightCm, formatter: NumberFormatter())
+                TextField("170", value: $temporaryUserData.heightCm, formatter: decimalFormatter)
                     .keyboardType(.decimalPad)
+                    .textContentType(.none) // Disable content type prediction
                     .padding()
                     .background(PrepPalTheme.Colors.gray100)
                     .cornerRadius(PrepPalTheme.Layout.cornerRadius)
             }
             
-            // Age input
+            // Age input with integer formatter
             VStack(alignment: .leading, spacing: 8) {
                 Text("Age")
                     .font(PrepPalTheme.Typography.bodyRegular)
                     .foregroundColor(PrepPalTheme.Colors.gray600)
                 
-                TextField("30", value: $temporaryUserData.age, formatter: NumberFormatter())
+                TextField("30", value: $temporaryUserData.age, formatter: integerFormatter)
                     .keyboardType(.numberPad)
+                    .textContentType(.none) // Disable content type prediction
                     .padding()
                     .background(PrepPalTheme.Colors.gray100)
                     .cornerRadius(PrepPalTheme.Layout.cornerRadius)

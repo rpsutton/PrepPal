@@ -2,6 +2,8 @@ import SwiftUI
 
 struct RecipeCardView: View {
     let meal: Meal
+    let mode: RecipeViewMode
+    var onStartCooking: () -> Void = {}
     
     // By default, show all sections
     @State private var expandedSection: RecipeSection? = nil
@@ -12,8 +14,19 @@ struct RecipeCardView: View {
     @State private var stepTimers: [Int: Int] = [:] // Stores the intended duration for each step
     @State private var showModificationSheet: Bool = false
     
+    enum RecipeViewMode {
+        case preview
+        case cooking
+    }
+    
     var body: some View {
         ZStack {
+            // Background color for cooking mode
+            if mode == .cooking {
+                PrepPalTheme.Colors.background
+                    .ignoresSafeArea()
+            }
+            
             ScrollView {
                 VStack(alignment: .leading, spacing: PrepPalTheme.Layout.elementSpacing) {
                     // Recipe Header with Image
@@ -43,37 +56,35 @@ struct RecipeCardView: View {
                     }
                     .padding(PrepPalTheme.Layout.basePadding)
                 }
-                .background(PrepPalTheme.Colors.background)
             }
+            .background(PrepPalTheme.Colors.cardBackground)
+            .shadow(color: PrepPalTheme.Colors.shadow, radius: 2, y: 1)
             
-            // Floating timer that stays visible
-            .overlay(
-                Group {
-                    if !activeTimers.isEmpty,
-                       let index = activeTimers.keys.first,
-                       let remaining = remainingTimes[index] {
-                        FloatingTimerView(
-                            stepIndex: index, 
-                            remaining: remaining, 
-                            stopTimer: stopTimer
-                        )
-                            .padding(.bottom, 70) // Add padding to avoid overlap with the modification button
-                    }
-                },
-                alignment: .bottomTrailing
-            )
-            
-            // Floating modification button
+            // Floating overlay elements
             VStack {
                 Spacer()
+                
+                // Floating timer that stays visible
+                if !activeTimers.isEmpty,
+                   let index = activeTimers.keys.first,
+                   let remaining = remainingTimes[index] {
+                    FloatingTimerView(
+                        stepIndex: index, 
+                        remaining: remaining, 
+                        stopTimer: stopTimer
+                    )
+                    .padding(.bottom, 70)
+                }
+                
+                // Floating modification button
                 HStack {
                     Spacer()
                     RecipeModificationButton(action: {
                         showModificationSheet = true
                     })
                 }
+                .padding(PrepPalTheme.Layout.basePadding)
             }
-            .padding(PrepPalTheme.Layout.basePadding)
         }
         .sheet(isPresented: $showModificationSheet) {
             RecipeModificationView(meal: meal, isPresented: $showModificationSheet)
@@ -82,14 +93,12 @@ struct RecipeCardView: View {
     
     // MARK: - Helper Functions
     
-    // Stop timer for step - needs to be here for the floating timer view
     private func stopTimer(for stepIndex: Int) {
         activeTimers[stepIndex]?.invalidate()
         activeTimers[stepIndex] = nil
         remainingTimes[stepIndex] = 0
     }
     
-    // Toggle section state for section headers
     func toggleSection(_ section: RecipeSection) {
         withAnimation(.easeInOut(duration: 0.3)) {
             if expandedSection == section {
@@ -103,6 +112,7 @@ struct RecipeCardView: View {
 
 #Preview {
     RecipeCardView(meal: Meal(
+        id: UUID(),
         name: "Quick Chicken Meal Prep",
         description: "Seasoned chicken breast with roasted vegetables and brown rice. High protein, balanced carbs, and healthy fats in one simple prep.",
         calories: 425,
@@ -127,5 +137,5 @@ struct RecipeCardView: View {
             "Bake for 20-25 minutes until chicken reaches 165°F and vegetables are tender.",
             "Divide rice between meal prep containers, top with chicken and vegetables."
         ]
-    ))
+    ), mode: .preview)
 }

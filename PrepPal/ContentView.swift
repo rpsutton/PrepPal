@@ -1,14 +1,14 @@
 import SwiftUI
+import FirebaseCore
 
 struct ContentView: View {
+    
     var body: some View {
-        NavigationView(content: {
-            ChatView()
-        })
-        .background(
-            PrepPalTheme.Colors.background
-        )
-        .preferredColorScheme(.light)
+        ChatView()
+            .background(
+                PrepPalTheme.Colors.background
+            )
+            .preferredColorScheme(.light)
     }
 }
 

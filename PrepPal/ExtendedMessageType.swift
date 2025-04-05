@@ -49,7 +49,7 @@ struct NutritionGoalChatMessageView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Message text
-            Text(message.text)
+            Text(message.content)
                 .font(PrepPalTheme.Typography.bodyRegular)
                 .foregroundColor(PrepPalTheme.Colors.gray600)
             

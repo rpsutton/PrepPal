@@ -1,41 +1,10 @@
 import SwiftUI
 
-// MARK: - Enhanced Chat Message Model
-struct ChatMessage: Identifiable {
-    let id = UUID()
-    let text: String
-    let isUser: Bool
-    let type: MessageType
-    let timestamp = Date()
-    var associatedMeal: Meal? = nil
-    
-    enum MessageType {
-        case text
-        case image
-        case recipeSuggestion
-        case macroSuggestion
-        case custom(viewType: CustomViewType)
-        
-        enum CustomViewType {
-            case dailyMealPlan(dailyPlan: DailyMealPlan)
-            case weeklyMealPlan(weeklyPlan: WeeklyMealPlan)
-            case macroProgress(dailyPlan: DailyMealPlan)
-        }
-    }
-    
-    init(text: String, isUser: Bool, type: MessageType = .text, associatedMeal: Meal? = nil) {
-        self.text = text
-        self.isUser = isUser
-        self.type = type
-        self.associatedMeal = associatedMeal
-    }
-}
-
-// MARK: - Enhanced Message Bubble
+// MARK: - Message Bubble
 struct MessageBubble: View {
     let message: ChatMessage
-    @State var showDetail = false
     @EnvironmentObject var userProfileManager: UserProfileManager
+    @State var selectedMeal: Meal?
     
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -59,17 +28,12 @@ struct MessageBubble: View {
                 Spacer(minLength: 60)
             }
         }
-        .sheet(isPresented: $showDetail) {
-            if let meal = message.associatedMeal {
-                RecipeCardView(meal: meal)
-            }
-        }
     }
     
     // MARK: - Message Content
     var messageBubbleContent: some View {
         Group {
-            switch message.type {
+            switch message.messageType {
             case .text:
                 // Regular text message
                 textBubble
@@ -86,40 +50,20 @@ struct MessageBubble: View {
                 // Macro adjustment suggestion
                 macroSuggestionBubble
                 
-            case .custom(let viewType):
-                // Custom content
-                customMessageContent(for: viewType)
+            case .mealPlan(let customView):
+                switch customView {
+                case .weeklyMealPlan(let weeklyPlan):
+                    MealPlanTimelineView(weeklyPlan: weeklyPlan)
+                        .padding(.horizontal, -PrepPalTheme.Layout.basePadding)
+                case .recipe(let meal):
+                    RecipeCardView(meal: meal, mode: .preview)
+                        .padding(.horizontal, -PrepPalTheme.Layout.basePadding)
+                default:
+                    textBubble
+                }
+            default:
+                textBubble
             }
-        }
-    }
-    
-    // Custom message content handler
-    @ViewBuilder
-    func customMessageContent(for viewType: ChatMessage.MessageType.CustomViewType) -> some View {
-        switch viewType {
-        case .dailyMealPlan(let dailyPlan):
-            NutritionDashboardCard(
-                dailyPlan: dailyPlan,
-                showFullMealPlan: .constant(false),
-                selectedMeal: .constant(nil),
-                showMealDetail: .constant(false)
-            )
-            .padding(.horizontal, 0)
-            
-        case .weeklyMealPlan(let weeklyPlan):
-            WeeklyMealPlanPreview(
-                weeklyPlan: weeklyPlan,
-                showFullMealPlan: .constant(false),
-                selectedDay: .constant(nil)
-            )
-            .padding(.horizontal, 0)
-            
-        case .macroProgress(let dailyPlan):
-            DailyMacroProgressCard(
-                dailyPlan: dailyPlan,
-                nutritionGoals: userProfileManager.userProfile.nutritionGoals
-            )
-            .padding(.horizontal, 0)
         }
     }
     
@@ -138,7 +82,7 @@ struct MessageBubble: View {
     
     // MARK: - Text Bubble
     var textBubble: some View {
-        Text(message.text)
+        Text(message.content)
             .font(PrepPalTheme.Typography.bodyRegular)
             .foregroundColor(message.isUser ? PrepPalTheme.Colors.accentNavy : PrepPalTheme.Colors.gray600)
             .padding(.horizontal, PrepPalTheme.Layout.basePadding)
@@ -177,7 +121,7 @@ struct MessageBubble: View {
                         .font(.system(size: 30))
                 )
             
-            Text(message.text)
+            Text(message.content)
                 .font(PrepPalTheme.Typography.caption)
                 .foregroundColor(message.isUser ? PrepPalTheme.Colors.accentNavy : PrepPalTheme.Colors.gray600)
         }
@@ -197,15 +141,11 @@ struct MessageBubble: View {
     
     // MARK: - Recipe Suggestion Bubble
     var recipeSuggestionBubble: some View {
-        Button(action: {
-            if message.associatedMeal != nil {
-                showDetail = true
-            }
-        }) {
+        NavigationLink(value: message.associatedData?.mealPlan) {
             HStack(alignment: .top) {
                 // Recipe Info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(message.text)
+                    Text(message.content)
                         .font(PrepPalTheme.Typography.bodyRegular.bold())
                         .foregroundColor(PrepPalTheme.Colors.gray600)
                         .multilineTextAlignment(.leading)
@@ -218,7 +158,6 @@ struct MessageBubble: View {
                 
                 Spacer()
                 
-                // Recipe Image Placeholder
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(PrepPalTheme.Colors.primary.opacity(0.1))
@@ -251,7 +190,7 @@ struct MessageBubble: View {
                 .font(PrepPalTheme.Typography.bodyRegular.bold())
                 .foregroundColor(PrepPalTheme.Colors.gray600)
             
-            Text(message.text)
+            Text(message.content)
                 .font(PrepPalTheme.Typography.bodyRegular)
                 .foregroundColor(PrepPalTheme.Colors.gray600)
             
@@ -353,27 +292,27 @@ struct MacroAdjustmentBar: View {
 #Preview {
     VStack(spacing: 20) {
         MessageBubble(message: ChatMessage(
-            text: "I need a meal prep plan for the week",
-            isUser: true,
-            type: .text
+            content: "I need a meal prep plan for the week",
+            role: .assistant,
+            messageType: .text
         ))
         
         MessageBubble(message: ChatMessage(
-            text: "Here's a meal prep suggestion based on your preferences",
-            isUser: false,
-            type: .text
+            content: "Here's a meal prep suggestion based on your preferences",
+            role: .assistant,
+            messageType: .text
         ))
         
         MessageBubble(message: ChatMessage(
-            text: "Quick Chicken Meal Prep",
-            isUser: false,
-            type: .recipeSuggestion
+            content: "Quick Chicken Meal Prep",
+            role: .user,
+            messageType: .recipeSuggestion
         ))
         
         MessageBubble(message: ChatMessage(
-            text: "I've uploaded an image of my ingredients",
-            isUser: true,
-            type: .image
+            content: "I've uploaded an image of my ingredients",
+            role: .user,
+            messageType: .image
         ))
     }
     .padding()
